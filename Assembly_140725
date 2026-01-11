@@ -1,0 +1,68 @@
+%include "utils.nasm"
+section .data
+    V dw [5,-3,8,4,0,-18,14,5]
+    n equ ($-V)/2
+
+section .bss
+    i resd 1
+
+section .text
+    extern proc
+    global _start
+_start:
+    push i
+    push n
+    push V
+    call proc
+    printd dword[i]
+esci:
+    exit 0
+
+section .data
+    V equ 8
+    n equ 12
+    i equ 16
+
+section .text
+    global proc
+proc:
+    push EBP
+    mov EBP, ESP
+    pushad
+    mov ESI, [EBP + n]
+    mov EBX, [EBP + V]
+    xor AX, AX 
+    xor EDI, EDI 
+ciclo_somma:
+    cmp EDI, ESI
+    jge avanti
+    add AX, [EBX + EDI*2]
+    inc EDI
+    jmp ciclo_somma
+;ricerca indice
+avanti:
+    shl AX, 1
+    mov CX, 3
+    cwd
+    div CX
+    cmp DX, 0
+    je non_trovato
+    xor CX, CX
+    xor EDI, EDI
+ciclo:
+    cmp EDI, ESI
+    jge non_trovato
+    add CX, [EBX + EDI*2]
+    cmp CX, AX
+    je trovato 
+    inc EDI
+    jmp ciclo
+non_trovato:
+    mov EDI, -1
+trovato:
+    mov ECX, [EBP + i]
+    mov [ECX], EDI
+esci:
+    popad
+    pop EBP
+    ret 12
